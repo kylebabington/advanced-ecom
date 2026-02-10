@@ -8,12 +8,17 @@
 // ✅ Checkout clears Redux + sessionStorage
 // ✅ Image fallback (we add it here too for completeness)
 
+import { useAuth } from '../auth/AuthContext'
+import { createOrder } from '../firebase/orders'
+import { useNavigate } from 'react-router-dom'
 import { useMemo, useState } from 'react'
 import { useAppDispatch, useAppSelector } from '../app/hooks'
 import { removeFromCart, clearCart } from '../features/cart/cartSlice'
 import ImageWithFallback from '../components/ImageWithFallback'
 
 export default function CartPage() {
+  const { user } = useAuth()
+  const nav = useNavigate()
   const dispatch = useAppDispatch()
   const items = useAppSelector((state) => state.cart.items)
 
@@ -89,7 +94,14 @@ export default function CartPage() {
             <button
               type="button"
               className="btn btnPrimary"
-              onClick={() => {
+              onClick={async () => {
+                if (!user) {
+                  nav('/login')
+                  return
+                }
+
+                // Create order in Firestore, then clear cart
+                await createOrder({ userId: user.uid, cartItems: items })
                 dispatch(clearCart())
                 setCheckedOut(true)
               }}

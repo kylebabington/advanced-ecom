@@ -42,7 +42,7 @@ export const cartSlice = createSlice({
         },
 
         // Remove product entirely from cart
-        removeFromCart: (state, action: PayloadAction<number>) => {
+        removeFromCart: (state, action: PayloadAction<string>) => {
             const productId = action.payload
             state.items = state.items.filter((i) => i.product.id !== productId)
             sync(state)

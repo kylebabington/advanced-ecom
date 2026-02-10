@@ -4,6 +4,12 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import Layout from './components/Layout'
 import HomePage from './pages/HomePage'
 import CartPage from './pages/CartPage'
+import LoginPage from './pages/LoginPage'
+import RegisterPage from './pages/RegisterPage'
+import ProfilePage from './pages/ProfilePage'
+import OrdersPage from './pages/OrdersPage'
+import ManageProductsPage from './pages/ManageProductsPage'
+import OrderDetailPage from './pages/OrderDetailPage'
 
 export default function App() {
   return (
@@ -12,6 +18,14 @@ export default function App() {
       <Route element={<Layout />}>
         <Route path="/" element={<HomePage />} />
         <Route path="/cart" element={<CartPage />} />
+
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
+
+        <Route path="/orders" element={<OrdersPage />} />
+        <Route path="/orders/:id" element={<OrderDetailPage />} />
+        <Route path="/manage-products" element={<ManageProductsPage />} />
 
         {/* ✅ Catch-all route */}
         <Route path="*" element={<Navigate to="/" replace />} />

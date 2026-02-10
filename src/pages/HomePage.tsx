@@ -1,16 +1,16 @@
 // src/pages/HomePage.tsx
-// Home page loads products from FakeStore API using React Query.
+// Home page loads products from Firestore using React Query.
 // It also filters products by selected category (using CategorySelect).
 //
 // Requirements satisfied:
-// ✅ Home page shows products from FakeStoreAPI (React Query)
+// ✅ Home page shows products from Firestore (React Query)
 // ✅ Category dropdown (React Query) filters products by category
 
 import { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import CategorySelect from '../components/CategorySelect'
 import ProductCard from '../components/ProductCard'
-import { fetchAllProducts, fetchProductsByCategory } from '../api/fakeStore'
+import { fetchAllProducts, fetchProductsByCategory } from '../firebase/products'
 import type { Product } from '../api/types'
 
 export default function HomePage() {
