@@ -7,10 +7,14 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Orders: user can only create orders with their own userId,
-    // and only read/update/delete their own orders.
+    // Orders: user can create orders with their own userId; read/update/delete own orders.
+    // Admins can read any order (for order management).
     match /orders/{orderId} {
-      allow read, delete: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow read: if request.auth != null && (
+        request.auth.uid == resource.data.userId ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true
+      );
+      allow delete: if request.auth != null && request.auth.uid == resource.data.userId;
       allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
       allow update: if request.auth != null && request.auth.uid == resource.data.userId;
     }

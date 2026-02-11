@@ -15,7 +15,7 @@ import ImageWithFallback from '../components/ImageWithFallback'
 import { Link } from 'react-router-dom'
 
 export default function OrderDetailPage() {
-    const { user, loading } = useAuth()
+    const { user, loading, isAdmin } = useAuth()
 
     // Grab the :id from /orders/:id
     const { id } = useParams<{ id: string }>()
@@ -83,10 +83,10 @@ export default function OrderDetailPage() {
         )
     }
 
-    // Optional safety check:
-    // In a real app, you should enforce this in firestore rules too.
-    // This prevents a logged in user from viewing someone else's order if they guess an ID.
-    if (order.userId !== user.uid) {
+    // Client-side check: user can view own order; admins can view any order.
+    // Firestore rules enforce the same access.
+    const canView = order.userId === user.uid || isAdmin
+    if (!canView) {
         return (
             <div className="page">
                 <h2 className="pageTitle">Order Details</h2>
@@ -109,6 +109,11 @@ export default function OrderDetailPage() {
                     <h2 className="pageTitle">Order Details</h2>
                     <div className="muted small">Order ID: {order.id}</div>
                     <div className="muted small">Created: {createdLabel}</div>
+                    {isAdmin && (
+                        <div className="muted small" style={{ marginTop: 8 }}>
+                            User ID: <span style={{ fontFamily: 'monospace' }}>{order.userId}</span>
+                        </div>
+                    )}
                 </div>
 
                 <Link to="/orders" className="btn">

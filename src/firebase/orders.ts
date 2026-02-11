@@ -65,9 +65,14 @@ export async function fetchOrdersForUser(userId: string): Promise<OrderDoc[]> {
         orderBy('createdAt', 'desc')
     )
     const snap = await getDocs(q)
+    return snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<OrderDoc, 'id'>) }))
+}
 
-    return snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<OrderDoc, 'id'>)
-    }))
+/** Fetch all orders (admin only). Firestore rules enforce admin access. */
+export async function fetchAllOrders(): Promise<OrderDoc[]> {
+    const q = query(ordersCol, orderBy('createdAt', 'desc'))
+    const snap = await getDocs(q)
+    return snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<OrderDoc, 'id'>) }))
 }
 
 export async function getOrderById(orderId: string): Promise<OrderDoc | null> {

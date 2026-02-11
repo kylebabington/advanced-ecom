@@ -1,17 +1,17 @@
 // src/pages/OrdersPage.tsx
-// Shows order history for the logged in user.
+// Shows order history for the logged in user. Admins see all orders.
 
 import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '../auth/AuthContext'
-import { fetchOrdersForUser } from '../firebase/orders'
+import { fetchOrdersForUser, fetchAllOrders } from '../firebase/orders'
 import { Link } from 'react-router-dom'
 
 export default function OrdersPage() {
-    const {user, loading } = useAuth()
+    const { user, loading, isAdmin } = useAuth()
 
     const { data, isLoading, isError, error } = useQuery({
-        queryKey: ['orders', user?.uid],
-        queryFn: () => user ? fetchOrdersForUser(user.uid) : [],
+        queryKey: ['orders', user?.uid, isAdmin],
+        queryFn: () => (isAdmin ? fetchAllOrders() : user ? fetchOrdersForUser(user.uid) : []),
         enabled: !!user,
     })
 
@@ -20,7 +20,7 @@ export default function OrdersPage() {
 
     return (
         <div className="page">
-            <h2 className="pageTitle">Order History</h2>
+            <h2 className="pageTitle">{isAdmin ? 'All Orders' : 'Order History'}</h2>
 
             {isLoading && <div>Loading orders...</div>}
             {isError && <div className="notice">{(error as Error)?.message ?? 'Error'}</div>}
@@ -52,6 +52,12 @@ export default function OrdersPage() {
                                         <div className="muted small">Total</div>
                                         <div>${o.totalPrice.toFixed(2)}</div>
                                     </div>
+                                    {isAdmin && (
+                                        <div>
+                                            <div className="muted small">User ID</div>
+                                            <div className="small" style={{ fontFamily: 'monospace' }}>{o.userId}</div>
+                                        </div>
+                                    )}
                                 </div>
                             </Link>
                         )

@@ -16,6 +16,8 @@ import {
 import { uploadProductImage } from '../firebase/storage'
 import ImageWithFallback from '../components/ImageWithFallback'
 import { useToast } from '../components/Toast'
+import { useAuth } from '../auth/AuthContext'
+import { Link } from 'react-router-dom'
 
 const emptyForm: ProductInput = {
     title: '',
@@ -28,10 +30,12 @@ const emptyForm: ProductInput = {
 export default function ManageProductsPage() {
     const qc = useQueryClient()
     const { showToast } = useToast()
+    const { user, loading: authLoading, isAdmin, adminChecked } = useAuth()
 
     const { data, isLoading, isError, error } = useQuery<Product[]>({
         queryKey: ['products-admin'],
         queryFn: fetchAllProducts,
+        enabled: !!user && isAdmin,
     })
 
     const [editingId, setEditingId] = useState<string | null>(null)
@@ -86,6 +90,17 @@ export default function ManageProductsPage() {
         setIsDragOver(false)
         const file = e.dataTransfer.files[0]
         if (file) handleImageFile(file)
+    }
+
+    if (authLoading || (user && !adminChecked)) return <div className="page">Loading...</div>
+    if (!user || !isAdmin) {
+        return (
+            <div className="page">
+                <h2 className="pageTitle">Manage Products</h2>
+                <div className="notice">Access denied. Only admins can manage products.</div>
+                <Link to="/" className="btn" style={{ marginTop: 12, display: 'inline-block' }}>Back to Home</Link>
+            </div>
+        )
     }
 
     return (

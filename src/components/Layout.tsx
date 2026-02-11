@@ -6,7 +6,7 @@ import { useAppSelector } from '../app/hooks'
 import { useAuth } from '../auth/AuthContext'
 
 export default function Layout() {
-  const { user, logout } = useAuth()
+  const { user, logout, isAdmin } = useAuth()
 
   const totalQty = useAppSelector((state) =>
     state.cart.items.reduce((sum, item) => sum + item.quantity, 0)
@@ -23,7 +23,9 @@ export default function Layout() {
           <Link to="/">Home</Link>
           <Link to="/cart">Cart <span className="badge">{totalQty}</span></Link>
           <Link to="/orders">Orders</Link>
-          <Link to="/manage-products">Manage Products</Link>
+          {isAdmin && (
+            <Link to="/manage-products">Manage Products</Link>
+          )}
 
           {!user ? (
             <>
