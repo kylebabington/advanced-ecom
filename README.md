@@ -87,3 +87,58 @@ npm run dev
 The app will be available at:
 
 http://localhost:5173
+
+---
+
+## 🔥 Firestore Setup (Backend)
+
+The app uses **Firebase Firestore** for products, orders, and user profiles. To run locally with real data:
+
+### 1. Firebase project
+
+- Create a project at [Firebase Console](https://console.firebase.google.com) and enable **Firestore** and **Authentication (Email/Password)**.
+- Register your app and add the config in `src/firebase/firebase.ts`.
+- Update `.firebaserc` if your project ID differs.
+
+### 2. Deploy security rules
+
+Server-side access control is enforced by Firestore rules in `firestore.rules`:
+
+- **Orders**: Users can only read/write their own orders (`userId` must match `request.auth.uid`).
+- **Products**: Anyone can read; create/update/delete allowed only for users whose `/users/{uid}` document has `isAdmin == true`.
+- **Users**: Users can only read/write their own profile document (`/users/{uid}`).
+
+Deploy rules and indexes:
+
+```bash
+npm install -g firebase-tools
+firebase login
+firebase deploy --only firestore
+```
+
+### 3. Expected Firestore collections and fields
+
+| Collection | Document ID | Fields |
+|------------|-------------|--------|
+| **products** | Auto | `title` (string), `price` (number), `description` (string), `category` (string), `image` (string). Optional: `rating` (object with `rate`, `count`). |
+| **orders** | Auto | `userId` (string), `createdAt` (Timestamp), `totalPrice` (number), `items` (array of `{ productId, title, price, image, quantity }`). |
+| **users** | User UID | `uid`, `email`, `createdAt` (number). Optional: `name`, `address`, `isAdmin` (boolean; set to `true` for users who may manage products). |
+
+To allow a user to manage products, set `isAdmin: true` on their document in the `users` collection (e.g. via Firebase Console or your app after adding an admin UI).
+
+### 4. Seeding sample products
+
+A seed script adds sample products so reviewers can run the app without manual data entry:
+
+1. In Firebase Console → Project Settings → Service accounts, click **Generate new private key** and save the JSON file.
+2. Set the environment variable to that file:
+   - Windows: `set GOOGLE_APPLICATION_CREDENTIALS=C:\path\to\your-service-account.json`
+   - macOS/Linux: `export GOOGLE_APPLICATION_CREDENTIALS=/path/to/your-service-account.json`
+3. Install dependencies and run the seed script:
+
+```bash
+npm install
+npm run seed
+```
+
+This creates sample documents in the `products` collection. If you prefer to create products manually, use the same field names as in the table above.

@@ -1,0 +1,31 @@
+rules_version = '2';
+// Firestore security rules for the e-commerce app.
+// - Orders: per-user access (users can only read/write their own orders).
+// - Products: anyone can read; create/update/delete restricted to admin users.
+// - Users: users can only read and write their own profile document.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Orders: user can only create orders with their own userId,
+    // and only read/update/delete their own orders.
+    match /orders/{orderId} {
+      allow read, delete: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      allow update: if request.auth != null && request.auth.uid == resource.data.userId;
+    }
+
+    // Products: read by everyone (including unauthenticated for storefront);
+    // write (create, update, delete) only if the requesting user has isAdmin == true in /users/{uid}.
+    match /products/{productId} {
+      allow read: if true;
+      allow create, update, delete: if request.auth != null
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+    }
+
+    // Users: each user can only read and write their own profile (doc id = uid).
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}

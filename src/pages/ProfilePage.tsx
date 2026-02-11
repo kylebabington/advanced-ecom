@@ -6,10 +6,12 @@ import { useAuth } from '../auth/AuthContext'
 import { deleteUser } from 'firebase/auth'
 import { deleteUserProfile, getUserProfile, updateUserProfile } from '../firebase/users'
 import { useNavigate } from 'react-router-dom'
+import { useToast } from '../components/Toast'
 
 export default function ProfilePage() {
     const { user, loading, logout } = useAuth()
     const nav = useNavigate()
+    const { showToast } = useToast()
 
     const [name, setName] = useState('')
     const [address, setAddress] = useState('')
@@ -81,6 +83,7 @@ export default function ProfilePage() {
                     try {
                         await deleteUserProfile(user.uid)
                         await deleteUser(user)
+                        showToast('Account deleted successfully')
                         nav('/')
                     } catch (err: unknown) {
                         setMsg(err instanceof Error ? err.message : 'Failed to delete account')

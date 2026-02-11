@@ -11,6 +11,8 @@ export type UserProfile = {
     name?: string
     address?: string
     createdAt: number
+    /** When true, user can create/update/delete products. Used by Firestore rules. */
+    isAdmin?: boolean
 }
 
 export async function createUserProfile(profile: UserProfile): Promise<void> {

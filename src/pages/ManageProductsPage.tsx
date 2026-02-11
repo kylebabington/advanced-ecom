@@ -10,10 +10,12 @@ import {
     deleteProduct,
     fetchAllProducts,
     updateProduct,
+    validateProductInput,
     type ProductInput,
 } from '../firebase/products'
 import { uploadProductImage } from '../firebase/storage'
 import ImageWithFallback from '../components/ImageWithFallback'
+import { useToast } from '../components/Toast'
 
 const emptyForm: ProductInput = {
     title: '',
@@ -25,6 +27,7 @@ const emptyForm: ProductInput = {
 
 export default function ManageProductsPage() {
     const qc = useQueryClient()
+    const { showToast } = useToast()
 
     const { data, isLoading, isError, error } = useQuery<Product[]>({
         queryKey: ['products-admin'],
@@ -37,6 +40,7 @@ export default function ManageProductsPage() {
     const [uploading, setUploading] = useState(false)
     const [uploadError, setUploadError] = useState<string | null>(null)
     const [isDragOver, setIsDragOver] = useState(false)
+    const [formErrors, setFormErrors] = useState<string[]>([])
     const fileInputRef = useRef<HTMLInputElement>(null)
 
     const editingProduct = useMemo(
@@ -95,6 +99,13 @@ export default function ManageProductsPage() {
             <h3 style={{ marginTop: 0 }}>{editingId ? 'Edit product' : 'Create product'}</h3>
 
             <div style={{ display: 'grid', gap: 10 }}>
+                {formErrors.length > 0 && (
+                    <div className="notice" role="alert">
+                        {formErrors.map((e, i) => (
+                            <div key={i}>{e}</div>
+                        ))}
+                    </div>
+                )}
                 <label className="muted small">Title</label>
                 <input
                     placeholder="Title"
@@ -182,14 +193,26 @@ export default function ManageProductsPage() {
                         className="btn btnPrimary"
                         disabled={busy}
                         onClick={async () => {
+                            setFormErrors([])
+                            const errors = editingId
+                                ? validateProductInput(form, true)
+                                : validateProductInput(form, false)
+                            if (errors.length) {
+                                setFormErrors(errors)
+                                return
+                            }
                             setBusy(true)
                             try {
                                 if (editingId) await updateProduct(editingId, form)
                                 else await createProduct(form)
 
                                 setEditingId(null)
+                                setFormErrors([])
                                 await qc.invalidateQueries({ queryKey: ['products-admin'] })
                                 await qc.invalidateQueries({ queryKey: ['products'] })
+                                showToast(editingId ? 'Product updated successfully' : 'Product created successfully')
+                            } catch (err) {
+                                setFormErrors([err instanceof Error ? err.message : 'Failed to save product'])
                             } finally {
                                 setBusy(false)
                             }
@@ -232,6 +255,7 @@ export default function ManageProductsPage() {
                                     await deleteProduct(p.id)
                                     await qc.invalidateQueries({ queryKey: ['products-admin'] })
                                     await qc.invalidateQueries({ queryKey: ['products'] })
+                                    showToast('Product deleted successfully')
                                 }}
                             >
                                 Delete

@@ -56,12 +56,31 @@ export async function getProductById(productId: string): Promise<Product | null>
 
 export type ProductInput = Omit<Product, 'id'>
 
+/** Validation for product create/update. Returns list of error messages (empty if valid). */
+export function validateProductInput(input: Partial<ProductInput>, isUpdate: boolean): string[] {
+    const errors: string[] = []
+    const title = (input.title ?? '').trim()
+    const category = (input.category ?? '').trim()
+    const price = input.price ?? 0
+
+    if (!title) errors.push('Title is required.')
+    if (!category) errors.push('Category is required.')
+    if (!isUpdate && price <= 0) errors.push('Price must be greater than 0.')
+    if (isUpdate && input.price !== undefined && input.price <= 0) errors.push('Price must be greater than 0.')
+
+    return errors
+}
+
 export async function createProduct(input: ProductInput): Promise<string> {
+    const errors = validateProductInput(input, false)
+    if (errors.length) throw new Error(errors.join(' '))
     const ref = await addDoc(productsCol, input)
     return ref.id
 }
 
 export async function updateProduct(productId: string, input: Partial<ProductInput>): Promise<void> {
+    const errors = validateProductInput(input, true)
+    if (errors.length) throw new Error(errors.join(' '))
     const ref = doc(db, 'products', productId)
     await updateDoc(ref, input)
 }
