@@ -29,7 +29,7 @@ export default function CategorySelect({ value, onChange }: CategorySelectProps)
     queryFn: fetchCategories,
 
     // Categories don't change constantly, so a small cache helps UX
-    staleTime:60_000, // 1 minute
+    staleTime: 60_000, // 1 minute
   })
 
   // Normalize + de-dupe (optional, but prevents "Tools" + "tools" duplicates)

@@ -5,7 +5,6 @@
 import {
     collection,
     doc,
-    getDoc,
     getDocs,
     addDoc,
     updateDoc,
@@ -45,13 +44,6 @@ export async function fetchCategories(): Promise<string[]> {
     const unique = Array.from(new Set(products.map((p) => p.category).filter(Boolean)))
     unique.sort()
     return unique
-}
-
-export async function getProductById(productId: string): Promise<Product | null> {
-    const ref = doc(db, 'products', productId)
-    const snap = await getDoc(ref)
-    if (!snap.exists()) return null
-    return { id: snap.id, ...(snap.data() as Omit<Product, 'id'>)}
 }
 
 export type ProductInput = Omit<Product, 'id'>

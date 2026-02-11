@@ -28,7 +28,7 @@ export default function ProfilePage() {
     }, [user])
 
     if (loading) return <div className="page">Loading...</div>
-    if (!user) return <div className="page">Please Login to view you profile.</div>
+    if (!user) return <div className="page">Please login to view your profile.</div>
 
     return (
         <div className="page" style={{ maxWidth: 640 }}>
