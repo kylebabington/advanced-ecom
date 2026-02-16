@@ -4,10 +4,12 @@
 import { useState } from 'react'
 import { signInWithEmailAndPassword } from 'firebase/auth'
 import { auth } from '../firebase/firebase'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, useLocation, Link } from 'react-router-dom'
 
 export default function LoginPage() {
     const nav = useNavigate()
+    const location = useLocation()
+    const from = (location.state as { from?: string } | null)?.from ?? '/'
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [error, setError] = useState<string | null>(null)
@@ -27,7 +29,7 @@ export default function LoginPage() {
 
                 try {
                     await signInWithEmailAndPassword(auth, email, password)
-                    nav('/')
+                    nav(from, { replace: true })
                 } catch (err: unknown) {
                     setError(err instanceof Error ? err.message : 'Login failed')
                 } finally {

@@ -3,6 +3,10 @@
 A small but fully functional e-commerce frontend built with **React**, **TypeScript**, **Redux Toolkit**, and **React Query**.  
 This project demonstrates modern frontend architecture, clean state management, and practical UI behavior found in real-world applications.
 
+## 🚀 Live Application
+
+**[View the live E-commerce application →](https://advanced-ecom.vercel.app)**
+
 ---
 
 ## 📌 Project Overview

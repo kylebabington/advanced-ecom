@@ -2,6 +2,7 @@
 // This file is the main app component
 import { Routes, Route, Navigate } from 'react-router-dom'
 import Layout from './components/Layout'
+import AdminRoute from './components/AdminRoute'
 import HomePage from './pages/HomePage'
 import CartPage from './pages/CartPage'
 import LoginPage from './pages/LoginPage'
@@ -25,7 +26,7 @@ export default function App() {
 
         <Route path="/orders" element={<OrdersPage />} />
         <Route path="/orders/:id" element={<OrderDetailPage />} />
-        <Route path="/manage-products" element={<ManageProductsPage />} />
+        <Route path="/manage-products" element={<AdminRoute><ManageProductsPage /></AdminRoute>} />
 
         {/* ✅ Catch-all route */}
         <Route path="*" element={<Navigate to="/" replace />} />
