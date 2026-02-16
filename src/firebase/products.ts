@@ -9,8 +9,6 @@ import {
     addDoc,
     updateDoc,
     deleteDoc,
-    query,
-    where,
     type QueryDocumentSnapshot,
 } from 'firebase/firestore'
 
@@ -19,6 +17,19 @@ import type { Product } from '../api/types'
 
 // Firestore collection reference: /products
 const productsCol = collection(db, 'products')
+
+// Canonical categories shown in the UI. Product category strings (any case) map to these.
+export const CANONICAL_CATEGORIES = ['Plants', 'Tools', 'Materials'] as const
+export type CanonicalCategory = (typeof CANONICAL_CATEGORIES)[number]
+
+// Maps a product's raw category (e.g. "Garden Tools", "plants") to a canonical category or null.
+export function getCanonicalCategory(rawCategory: string): CanonicalCategory | null {
+    const raw = (rawCategory ?? '').trim().toLowerCase()
+    if (raw === 'plants') return 'Plants'
+    if (raw === 'tools' || raw === 'garden tools') return 'Tools'
+    if (raw === 'materials' || raw === 'garden materials') return 'Materials'
+    return null
+}
 
 // Convert Firestore docs -> Procuct objects with id
 function docToProduct(d: QueryDocumentSnapshot): Product {
@@ -32,9 +43,13 @@ export async function fetchAllProducts(): Promise<Product[]> {
 }
 
 export async function fetchProductsByCategory(category: string): Promise<Product[]> {
-    const q = query(productsCol, where('category', '==', category))
-    const snap = await getDocs(q)
-    return snap.docs.map(docToProduct)
+    const canonical = (category ?? '').trim()
+    if (!canonical) {
+        return fetchAllProducts()
+    }
+    // For our three categories, we include products whose category (any case) maps to this one.
+    const all = await fetchAllProducts()
+    return all.filter((p) => getCanonicalCategory(p.category) === canonical)
 }
 
 // Simple categories approach: derive categories from products
